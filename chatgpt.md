@@ -1,3 +1,5 @@
+this is  ProductList.jsx:
+```javascript
 import React, { useState,useEffect } from 'react';
 import './ProductList.css'
 import CartItem from './CartItem';
@@ -219,6 +221,9 @@ function ProductList() {
         }
     ];
 
+    console.log("🚀 ProductList Component Loaded!");  // Debugging log
+    console.log("Plants Array:", plantsArray); // Check if the array is loaded correctly
+
    const styleObj={
     backgroundColor: '#4CAF50',
     color: '#fff!important',
@@ -294,23 +299,7 @@ const Navbar = () => {
             </div>
             <div style={styleObjUl}>
                 <div> <a href="#" onClick={(e) => handlePlantsClick(e)} style={styleA}>Plants</a></div>
-                <div> <a href="#" onClick={(e) => handleCartClick(e)} style={styleA}>
-                    <h1 className='cart'>
-                    <span className="cart-count">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" id="IconChangeColor" height="68" width="68">
-                            <rect width="156" height="156" fill="none"></rect>
-                            <circle cx="80" cy="216" r="12"></circle>
-                            <circle cx="184" cy="216" r="12"></circle>
-                            <path d="M42.3,72H221.7l-26.4,92.4A15.9,15.9,0,0,1,179.9,176H84.1a15.9,15.9,0,0,1-15.4-11.6L32.5,37.8A8,8,0,0,0,24.8,32H8" 
-                                fill="none" stroke="#faf9f9" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">
-                            </path>
-                        </svg>
-                        <span className="cart-item-count">
-                            {cart.reduce((total, item) => total + item.quantity, 0)}
-                        </span>
-                    </span>
-                    </h1></a>
-                </div>
+                <div> <a href="#" onClick={(e) => handleCartClick(e)} style={styleA}><h1 className='cart'><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" id="IconChangeColor" height="68" width="68"><rect width="156" height="156" fill="none"></rect><circle cx="80" cy="216" r="12"></circle><circle cx="184" cy="216" r="12"></circle><path d="M42.3,72H221.7l-26.4,92.4A15.9,15.9,0,0,1,179.9,176H84.1a15.9,15.9,0,0,1-15.4-11.6L32.5,37.8A8,8,0,0,0,24.8,32H8" fill="none" stroke="#faf9f9" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" id="mainIconPathAttribute"></path></svg></h1></a></div>
             </div>
         </div>
         {!showCart? (
@@ -351,3 +340,400 @@ const Navbar = () => {
 }
 
 export default ProductList;
+
+
+```
+
+This is CartSlice.jsx:
+```javascript
+import { createSlice } from '@reduxjs/toolkit';
+
+export const CartSlice = createSlice({
+  name: 'cart',
+  initialState: {
+    items: [], // Initialize items as an empty array
+  },
+  reducers: {
+    addItem: (state, action) => {
+      const { name, image, cost } = action.payload;
+      const existingItem = state.items.find(item => item.name === name);
+      if (existingItem) {
+        existingItem.quantity++;
+      } else {
+        state.items.push({ name, image, cost, quantity: 1 });
+      }
+    },
+    removeItem: (state, action) => {
+      state.items = state.items.filter(item => item.name !== action.payload);
+    },
+    updateQuantity: (state, action) => {
+      const { name, quantity } = action.payload;
+      const itemToUpdate = state.items.find(item => item.name === name);
+      if (itemToUpdate) {
+        itemToUpdate.quantity = quantity;
+      }
+    },
+  },
+});
+
+export const { addItem, removeItem, updateQuantity } = CartSlice.actions;
+export default CartSlice.reducer;
+```
+
+This is CartItem.jsx:
+```javascript
+import React from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { removeItem, updateQuantity, addItem } from './CartSlice';
+import './CartItem.css';
+
+const CartItem = ({ onContinueShopping }) => {
+  const cart = useSelector(state => state.cart.items);
+  const dispatch = useDispatch();
+
+  // Calculate total amount for all products in the cart
+  const calculateTotalAmount = () => {
+    let totalAmount = 0;
+    cart.forEach((item) => {
+      let price = parseFloat(item.cost.substring(1));
+      totalAmount += price * item.quantity;
+    });
+    return totalAmount;
+  };
+
+  const handleContinueShopping = (e) => {
+    onContinueShopping(e);
+  };
+
+  const handleIncrement = (item) => {
+    dispatch(updateQuantity({name: item.name, quantity: item.quantity +1}));
+  };
+
+  const handleDecrement = (item) => {
+    if (item.quantity > 1) {
+    dispatch(updateQuantity({name: item.name, quantity: item.quantity -1}));
+    } else {
+      dispatch(removeItem(item.name));
+    }
+  };
+
+  const handleRemove = (item) => {
+    dispatch(removeItem(item.name));
+  };
+
+  // Calculate total cost based on quantity for an item
+  const calculateTotalCost = (item) => {
+    let totalCost = 0;
+    let price = parseFloat(item.cost.substring(1));
+    return price * item.quantity;
+  };
+
+  const handleCheckoutShopping = (e) => {
+    alert('Functionality to be added for future reference');
+  }
+
+  return (
+    <div className="cart-container">
+      <h2 style={{ color: 'black' }}>Total Cart Amount: ${calculateTotalAmount()}</h2>
+      <div>
+        {cart.map(item => (
+          <div className="cart-item" key={item.name}>
+            <img className="cart-item-image" src={item.image} alt={item.name} />
+            <div className="cart-item-details">
+              <div className="cart-item-name">{item.name}</div>
+              <div className="cart-item-cost">{item.cost}</div>
+              <div className="cart-item-quantity">
+                <button className="cart-item-button cart-item-button-dec" onClick={() => handleDecrement(item)}>-</button>
+                <span className="cart-item-quantity-value">{item.quantity}</span>
+                <button className="cart-item-button cart-item-button-inc" onClick={() => handleIncrement(item)}>+</button>
+              </div>
+              <div className="cart-item-total">Total: ${calculateTotalCost(item)}</div>
+              <button className="cart-item-delete" onClick={() => handleRemove(item)}>Delete</button>
+            </div>
+          </div>
+        ))}
+      </div>
+      <div style={{ marginTop: '20px', color: 'black' }} className='total_cart_amount'></div>
+      <div className="continue_shopping_btn">
+        <button className="get-started-button" onClick={(e) => handleContinueShopping(e)}>Continue Shopping</button>
+        <br />
+        <button className="get-started-button1">Checkout</button>
+      </div>
+    </div>
+  );
+};
+
+export default CartItem;
+
+```
+
+This is ProductList.css:
+```css
+/* Reset some default styles */
+body, h1, ul {
+    margin: 0;
+    padding: 0;
+}
+
+/* Set a background color */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f0f0f0;
+}
+
+/* Navbar */
+.navbar {
+    background-color: #4CAF50;
+    color: #fff!important;
+    padding: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 20px;
+}
+
+.navbar .ul {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 1100px;
+}
+
+.navbar li {
+    margin-right: 30px;
+}
+
+.navbar .ul div a {
+    color: white;
+    font-size: 30px;
+    text-decoration: none;
+   
+}
+
+/* Product Grid */
+.product-grid {
+    display:flex;
+    flex-direction: column;
+    width: 100vw;
+    align-items: center;
+    justify-content: center;
+}
+.product-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 50px;
+    /* background-color: pink; */
+    /* justify-content: space-between; */
+    padding: 20px;
+    width: 100%;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Product Card */
+.product-card {
+    flex: 0 0 calc(33.33% - 20px); /* Adjust width for 3 cards per row with 20px gap */
+    max-width: calc(26.33% - 20px); /* Adjust max-width for 3 cards per row with 20px gap */
+    margin-bottom: 20px;
+    padding: 20px;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    text-align: center;
+    position: relative;
+    
+    gap: 20px;
+}
+
+/* Pseudo-classes - Hover effect on product button */
+.product-card:hover {
+    transform: scale(1.05);
+    transition: transform 0.3s ease-in-out;
+    z-index: 1;
+}
+
+.product-title {
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.product-price {
+    color: #e74c3c;
+    font-size: 1.2rem;
+    margin-bottom: 10px;
+}
+
+.product-image {
+    max-width: 100%;
+    height: 200px; /* Adjust height for better consistency */
+}
+
+.product-button {
+    background-color: #e74c3c;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    transition: background-color 0.3s ease-in-out;
+    margin-top: 10px;
+}
+
+.product-button:hover {
+    background-color: #c0392b;
+}
+
+/* When item is added to cart, change color */
+.product-button.added-to-cart {
+    background-color: grey;
+    cursor: not-allowed;
+}
+
+/* Pseudo-elements - Sale badge */
+.product-card::before {
+    content: "SALE";
+    background-color: #e74c3c;
+    color: #fff;
+    position: absolute;
+    top: 0;
+    right: 0;
+    padding: 5px 10px;
+    border-radius: 0 0 0 5px;
+}
+.tag_home_link{
+    display: flex;
+    /* background-color: red; */
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin-left: 50px;
+    color: white;
+    text-decoration: none;
+    font-size: 20px;
+}
+.tag_home_link h3{
+    font-size: 30px;
+}
+.tag a{
+    text-decoration: none;
+}
+.tag {
+    width: 400px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.tag img {
+    height: 70px;
+    width: 70px;
+    border-radius: 70%;
+    
+}
+
+.luxury {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 650px;
+    font-size: 19px;
+}
+.cart{
+    color: white;
+    display: flex;
+}
+.cart_quantity_count{
+    margin-top: 16px;
+    /* background-color: red; */
+    margin-left: 27px;
+    position: absolute;
+    font-size: 29px;
+
+}
+.plantname_heading{
+   display: flex;
+   align-items: center;
+   justify-content: center;
+    /* background-color: yellow; */
+}
+.plant_heading{
+    width: 400px;
+    text-align: center;
+    margin: 20px;
+    border: 1px solid rgb(5, 4, 4);
+    border-left: none;
+    border-right: none;
+
+    
+}
+/* Add Media Query for responsiveness */
+@media (max-width: 768px) {
+    .product-card {
+        flex: 1 1 calc(50% - 20px); /* Adjust width for 2 cards per row with 20px gap on smaller screens */
+        max-width: calc(50% - 20px); /* Adjust max-width for 2 cards per row with 20px gap on smaller screens */
+    }
+}
+/* ProductList.css */
+
+.product-button {
+    background-color: #4CAF50; /* Green */
+    border: none;
+    color: white;
+    padding: 10px 20px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    transition-duration: 0.4s;
+    cursor: pointer;
+  }
+  
+  .product-button:hover {
+    background-color: #45a049;
+  }
+  
+  .product-button.added-to-cart {
+    background-color: grey; /* Grey when product is added */
+  }
+  @media (max-width: 1200px) {
+    .product-card {
+      flex: 1 1 calc(33.33% - 20px); /* Adjust width for 3 cards per row with 20px gap on medium screens */
+      max-width: calc(33.33% - 20px); /* Adjust max-width for 3 cards per row with 20px gap on medium screens */
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .product-card {
+      flex: 1 1 calc(50% - 20px); /* Adjust width for 2 cards per row with 20px gap on small screens */
+      max-width: calc(50% - 20px); /* Adjust max-width for 2 cards per row with 20px gap on small screens */
+    }
+    .navbar {
+        flex-direction: column; /* Change flex direction to stack items vertically */
+        align-items: center; /* Align items to the center of the container */
+      }
+    
+      .tag {
+        margin-bottom: 20px; /* Add margin bottom for spacing */
+        text-align: center; /* Align text to the center */
+      }
+    
+      .ul {
+        display: flex; /* Set display to flex */
+        flex-direction: column; /* Change flex direction to stack items vertically */
+        gap: 10px; /* Add gap between items */
+      }
+    
+      .ul div {
+        text-align: center; /* Align text to the center */
+      }
+  }
+```
+
+I have a problem somewhere and I don't know where. 
+After adding something to the cart (pressing the button called product-button), the cart icon doesn't show any number.
+Also, the "Add to cart" button (product-button) from the product cards does not change to "Added to cart". 
+However, if I click "add to cart" button (product-button) several times, the item appears in the cart with as much quantity as the times I clicked the button.
+This means that the bsckend behaviour is correct, but not the front visualisation
+
+I want the front to make a 'onClick' change once i press the product-button
+I want you to make this edit for me and eli5

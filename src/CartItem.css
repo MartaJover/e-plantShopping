@@ -4,9 +4,9 @@
 .cart-item {
   display: flex;
   border-bottom: 1px solid #ccc;
-  padding: 10px 0;
+  padding: 10px;
   background-color: white;
-  width: 500px;
+  width: 520px;
   gap: 30px;
 }
 
@@ -57,6 +57,22 @@
 
 .cart-item-total {
   font-weight: bold;
+}
+
+.cart-item-count {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  background-color: white;
+  color: black;
+  font-size: 16px;
+  font-weight: bold;
+  border-radius: 50%;
+  width: 25px;
+  height: 25px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .cart-item-delete {
